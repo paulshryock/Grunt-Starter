@@ -11,14 +11,16 @@
   },
   "scripts": {
     "start": "npm run build",
-    "build": "npx grunt",
-    "watch": "npx grunt watch",
-    "serve": "npx grunt connect"
+    "build": "NODE_ENV='production' npx grunt build",
+    "develop": "NODE_ENV='development' npx grunt develop",
+    "serve": "NODE_ENV='development' npx grunt serve"
   },
   "devDependencies": {
     "grunt": "^1.0.4",
+    "grunt-contrib-clean": "^2.0.0",
     "grunt-contrib-concat": "^1.0.1",
     "grunt-contrib-connect": "^2.1.0",
+    "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-jshint": "^2.1.0",
     "grunt-contrib-sass": "^1.0.0",
     "grunt-contrib-uglify": "^4.0.1",

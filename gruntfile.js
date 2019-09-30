@@ -1,29 +1,68 @@
 module.exports = function (grunt) {
   var defaults = {
-    html: './src/index.html',
-    sass: './src/sass/style.scss',
-    js: [
-      './src/js/index.js',
-      './src/js/more.js'
-    ]
+    html: {
+      src: './src/*.html',
+      dest: './build'
+    },
+    css: {
+      src: './src/_assets/css/style.scss',
+      dest: './build/css',
+      bundle: './build/css/bundle.css'
+    },
+    js: {
+      root: './*.js',
+      src: './src/_assets/js/**/*.js',
+      dest: './build/js',
+      bundle: './build/js/bundle.js'
+    },
+    fonts: {
+      src: './src/_assets/fonts/**/*',
+      dest: './build/fonts'
+    },
+    images: {
+      src: './src/_assets/img/**/*',
+      dest: './build/img'
+    },
+    favicon: {
+      src: './src/_assets/favicon/**/*',
+      dest: './build'
+    }
   }
 
   grunt.initConfig({
 
     pkg: grunt.file.readJSON('package.json'),
 
+    // Clean build directory
+    clean: {
+      build: ['build'],
+      bundles: [defaults.css.bundle, defaults.js.bundle]
+    },
+
+    // Copy files
+    copy: {
+      main: {
+        files: [
+          { expand: true, flatten: true, src: [defaults.html.src], dest: defaults.html.dest, filter: 'isFile' },
+          { expand: true, src: [defaults.fonts.src], dest: defaults.fonts.dest, filter: 'isFile' },
+          { expand: true, src: [defaults.images.src], dest: defaults.images.dest, filter: 'isFile' },
+          { expand: true, flatten: true, src: [defaults.favicon.src], dest: defaults.favicon.dest, filter: 'isFile' }
+        ]
+      }
+    },
+
     // Compile Sass files
     sass: {
       dist: {
         files: {
-          'dist/css/style.css': defaults.sass
+          'build/css/bundle.css': defaults.css.src
         }
       }
     },
 
     // ES5: Lint .js files with jshint
     jshint: {
-      files: ['gruntfile.js', '<%= concat.dist.src %>'],
+      files: [defaults.js.root, defaults.js.src],
       option: {
         globals: {
           console: true,
@@ -39,7 +78,8 @@ module.exports = function (grunt) {
       },
       app: {
         src: [
-          '{,src/js/}*.js'
+          defaults.js.root,
+          defaults.js.src
         ]
       }
     },
@@ -50,8 +90,8 @@ module.exports = function (grunt) {
         separator: '\n'
       },
       dist: {
-        src: [defaults.js],
-        dest: 'dist/js/bundle.js'
+        src: [defaults.js.src],
+        dest: defaults.js.bundle
       }
     },
 
@@ -59,7 +99,7 @@ module.exports = function (grunt) {
     uglify: {
       dist: {
         files: {
-          './dist/js/bundle.min.js': '<%= concat.dist.dest %>'
+          './build/js/bundle.min.js': defaults.js.bundle
         }
       }
     },
@@ -67,14 +107,14 @@ module.exports = function (grunt) {
     // Run tasks whenever watched files change
     watch: {
       html: {
-        files: [defaults.html]
+        files: [defaults.html.src]
       },
       sass: {
-        files: [defaults.sass],
+        files: [defaults.css.src],
         tasks: ['sass']
       },
       js: {
-        files: ['gruntfile.js', '<%= concat.dist.src %>'],
+        files: [defaults.js.root, defaults.js.src],
         tasks: ['standard', 'concat', 'uglify']
       },
       options: {
@@ -90,6 +130,7 @@ module.exports = function (grunt) {
     connect: {
       server: {
         options: {
+          base: 'build',
           port: 8000,
           hostname: 'localhost',
           livereload: true,
@@ -100,13 +141,18 @@ module.exports = function (grunt) {
 
   })
 
+  grunt.loadNpmTasks('grunt-contrib-clean')
+  grunt.loadNpmTasks('grunt-contrib-copy')
+  grunt.loadNpmTasks('grunt-contrib-sass')
   grunt.loadNpmTasks('grunt-contrib-jshint')
   grunt.loadNpmTasks('grunt-standard')
   grunt.loadNpmTasks('grunt-contrib-concat')
   grunt.loadNpmTasks('grunt-contrib-uglify')
-  grunt.loadNpmTasks('grunt-contrib-sass')
   grunt.loadNpmTasks('grunt-contrib-watch')
   grunt.loadNpmTasks('grunt-contrib-connect')
 
-  grunt.registerTask('default', ['sass', 'standard', 'concat', 'uglify'])
+  grunt.registerTask('default', 'build')
+  grunt.registerTask('build', ['develop', 'clean:bundles'])
+  grunt.registerTask('develop', ['clean:build', 'copy', 'sass', 'standard', 'concat', 'uglify'])
+  grunt.registerTask('serve', ['develop', 'connect'])
 }
