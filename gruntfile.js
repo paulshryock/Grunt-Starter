@@ -2,18 +2,19 @@ module.exports = function (grunt) {
   var defaults = {
     html: {
       src: './src/*.html',
-      dest: './build'
+      dest: './build',
+      output: './build/*.html'
     },
     css: {
-      src: './src/_assets/css/style.scss',
+      src: './src/_assets/css/style.css',
       dest: './build/css',
-      bundle: './build/css/bundle.css'
+      output: './build/css/bundle.css'
     },
     js: {
       root: './*.js',
       src: './src/_assets/js/**/*.js',
       dest: './build/js',
-      bundle: './build/js/bundle.js'
+      output: './build/js/bundle.js'
     },
     fonts: {
       src: './src/_assets/fonts/**/*',
@@ -36,27 +37,105 @@ module.exports = function (grunt) {
     // Clean build directory
     clean: {
       build: ['build'],
-      bundles: [defaults.css.bundle, defaults.js.bundle]
+      css: [defaults.css.output],
+      js: [defaults.js.output]
     },
 
     // Copy files
     copy: {
-      main: {
+      html: {
         files: [
-          { expand: true, flatten: true, src: [defaults.html.src], dest: defaults.html.dest, filter: 'isFile' },
-          { expand: true, src: [defaults.fonts.src], dest: defaults.fonts.dest, filter: 'isFile' },
-          { expand: true, src: [defaults.images.src], dest: defaults.images.dest, filter: 'isFile' },
-          { expand: true, flatten: true, src: [defaults.favicon.src], dest: defaults.favicon.dest, filter: 'isFile' }
+          { expand: true, flatten: true, src: [defaults.html.src], dest: defaults.html.dest, filter: 'isFile' }
         ]
+      },
+      assets: {
+        // TODO: Process fonts
+        fonts: {
+          files: [
+            { expand: true, src: [defaults.fonts.src], dest: defaults.fonts.dest, filter: 'isFile' }
+          ]
+        },
+        // TODO: Process images
+        images: {
+          files: [
+            { expand: true, src: [defaults.images.src], dest: defaults.images.dest, filter: 'isFile' }
+          ]
+        },
+        // TODO: Process favicon
+        favicon: {
+          files: [
+            { expand: true, flatten: true, src: [defaults.favicon.src], dest: defaults.favicon.dest, filter: 'isFile' }
+          ]
+        }
       }
     },
 
-    // Compile Sass files
-    sass: {
-      dist: {
-        files: {
-          'build/css/bundle.css': defaults.css.src
+    jsbeautifier: {
+      html: {
+        src: [defaults.html.output],
+        options: {
+          html: {
+            indentSize: 2
+          }
         }
+      },
+      css: {
+        src: [defaults.css.output],
+        options: {
+          css: {
+            indentSize: 2
+          }
+        }
+      },
+      js: {
+        src: [defaults.js.output],
+        options: {
+          js: {
+            indentSize: 2
+          }
+        }
+      }
+    },
+
+    // Process CSS
+    postcss: {
+      process: {
+        options: {
+          map: true, // inline sourcemaps
+
+          // or
+          // map: {
+          // inline: false, // save all sourcemaps as separate files...
+          // annotation: 'build/css/maps/' // ...to the specified directory
+          // },
+
+          processors: [
+            require('postcss-easy-import'), // @import files
+            require('precss'), // Transpile Sass-like syntax
+            require('postcss-preset-env'), // Polyfill modern CSS
+            require('autoprefixer'), // Add vendor prefixes
+            require('pixrem')() // Add fallbacks for rem units
+          ]
+        },
+        src: defaults.css.src,
+        dest: defaults.css.output
+      },
+      minify: {
+        options: {
+          map: true, // inline sourcemaps
+
+          // or
+          // map: {
+          // inline: false, // save all sourcemaps as separate files...
+          // annotation: 'build/css/maps/' // ...to the specified directory
+          // },
+
+          processors: [
+            require('cssnano') // Minify
+          ]
+        },
+        src: defaults.css.output,
+        dest: './build/css/bundle.min.css'
       }
     },
 
@@ -84,14 +163,26 @@ module.exports = function (grunt) {
       }
     },
 
-    // Concatenate .js files
+    // Concatenate and rename .js files
     concat: {
       options: {
         separator: '\n'
       },
       dist: {
         src: [defaults.js.src],
-        dest: defaults.js.bundle
+        dest: defaults.js.output
+      }
+    },
+
+    // Compile ECMAScript 2015+ into a backwards compatible version of JavaScript
+    babel: {
+      options: {
+        sourceMap: true
+      },
+      dist: {
+        files: {
+          './build/js/bundle.js': defaults.js.output
+        }
       }
     },
 
@@ -99,7 +190,7 @@ module.exports = function (grunt) {
     uglify: {
       dist: {
         files: {
-          './build/js/bundle.min.js': defaults.js.bundle
+          './build/js/bundle.min.js': defaults.js.output
         }
       }
     },
@@ -107,15 +198,28 @@ module.exports = function (grunt) {
     // Run tasks whenever watched files change
     watch: {
       html: {
-        files: [defaults.html.src]
+        files: [defaults.html.src],
+        tasks: ['build:html']
       },
-      sass: {
+      css: {
         files: [defaults.css.src],
-        tasks: ['sass']
+        tasks: ['build:css', 'minify:css']
       },
       js: {
         files: [defaults.js.root, defaults.js.src],
-        tasks: ['standard', 'concat', 'uglify']
+        tasks: ['build:js', 'minify:js']
+      },
+      fonts: {
+        files: [defaults.fonts.src],
+        tasks: ['copy:fonts']
+      },
+      images: {
+        files: [defaults.images.src],
+        tasks: ['copy:images']
+      },
+      favicon: {
+        files: [defaults.favicon.src],
+        tasks: ['copy:favicon']
       },
       options: {
         livereload: {
@@ -143,16 +247,24 @@ module.exports = function (grunt) {
 
   grunt.loadNpmTasks('grunt-contrib-clean')
   grunt.loadNpmTasks('grunt-contrib-copy')
+  grunt.loadNpmTasks('grunt-jsbeautifier')
   grunt.loadNpmTasks('grunt-contrib-sass')
+  grunt.loadNpmTasks('grunt-postcss')
   grunt.loadNpmTasks('grunt-contrib-jshint')
   grunt.loadNpmTasks('grunt-standard')
+  grunt.loadNpmTasks('grunt-babel')
   grunt.loadNpmTasks('grunt-contrib-concat')
   grunt.loadNpmTasks('grunt-contrib-uglify')
   grunt.loadNpmTasks('grunt-contrib-watch')
   grunt.loadNpmTasks('grunt-contrib-connect')
 
   grunt.registerTask('default', 'build')
-  grunt.registerTask('build', ['develop', 'clean:bundles'])
-  grunt.registerTask('develop', ['clean:build', 'copy', 'sass', 'standard', 'concat', 'uglify'])
+  grunt.registerTask('build', ['develop', 'minify:css', 'minify:js'])
+  grunt.registerTask('build:html', ['copy:html', 'jsbeautifier:html'])
+  grunt.registerTask('build:css', ['postcss:process', 'jsbeautifier:css'])
+  grunt.registerTask('build:js', ['standard', 'concat', 'babel', 'jsbeautifier:js'])
+  grunt.registerTask('minify:css', ['postcss:minify', 'clean:css'])
+  grunt.registerTask('minify:js', ['uglify', 'clean:js'])
+  grunt.registerTask('develop', ['clean:build', 'build:html', 'copy:assets', 'build:css', 'build:js'])
   grunt.registerTask('serve', ['develop', 'connect'])
 }
