@@ -48,25 +48,23 @@ module.exports = function (grunt) {
           { expand: true, flatten: true, src: [defaults.html.src], dest: defaults.html.dest, filter: 'isFile' }
         ]
       },
-      assets: {
-        // TODO: Process fonts
-        fonts: {
-          files: [
-            { expand: true, src: [defaults.fonts.src], dest: defaults.fonts.dest, filter: 'isFile' }
-          ]
-        },
-        // TODO: Process images
-        images: {
-          files: [
-            { expand: true, src: [defaults.images.src], dest: defaults.images.dest, filter: 'isFile' }
-          ]
-        },
-        // TODO: Process favicon
-        favicon: {
-          files: [
-            { expand: true, flatten: true, src: [defaults.favicon.src], dest: defaults.favicon.dest, filter: 'isFile' }
-          ]
-        }
+      // TODO: Process fonts
+      fonts: {
+        files: [
+          { expand: true, src: [defaults.fonts.src], dest: defaults.fonts.dest, filter: 'isFile' }
+        ]
+      },
+      // TODO: Process images
+      images: {
+        files: [
+          { expand: true, src: [defaults.images.src], dest: defaults.images.dest, filter: 'isFile' }
+        ]
+      },
+      // TODO: Process favicon
+      favicon: {
+        files: [
+          { expand: true, flatten: true, src: [defaults.favicon.src], dest: defaults.favicon.dest, filter: 'isFile' }
+        ]
       }
     },
 
@@ -268,6 +266,6 @@ module.exports = function (grunt) {
   grunt.registerTask('build:js', ['standard', 'concat:js', 'babel', 'jsbeautifier:js'])
   grunt.registerTask('minify:css', ['postcss:minify', 'clean:css'])
   grunt.registerTask('minify:js', ['uglify', 'clean:js'])
-  grunt.registerTask('develop', ['clean:build', 'build:html', 'copy:assets', 'build:css', 'build:js'])
+  grunt.registerTask('develop', ['clean:build', 'build:html', 'copy:fonts', 'copy:images', 'copy:favicon', 'build:css', 'build:js'])
   grunt.registerTask('serve', ['develop', 'connect'])
 }
