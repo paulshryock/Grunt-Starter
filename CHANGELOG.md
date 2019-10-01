@@ -30,6 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 - Remove jshint
 
+### Fixed
+- Fix sourcemaps
+
 ## 1.0.0 - 2019-09-12 - Initial release
 
 ### Added
