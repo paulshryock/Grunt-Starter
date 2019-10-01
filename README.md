@@ -24,6 +24,8 @@ npm i
 npm start
 ```
 
+Then find and replace the package name (`Grunt-Starter`) and author name (`Paul Shryock`) in [`LICENSE`][license], [`package.json`][pkg], and `README.md`.
+
 ## Documentation
 
 [Project documentation][docs] files are in the `_docs` directory.
@@ -32,7 +34,9 @@ npm start
 
 If you'd like to contribute, please read the [Code of Conduct][code-of-conduct] and [Contributing instructions][contributing], then fork the repository and use a feature branch. Pull requests are welcome.
 
+[license]: https://firstdonoharm.dev/
 [node-download]: https://nodejs.org/en/download/
+[pkg]: package.json
 [docs]: _docs/
 [code-of-conduct]: CODE_OF_CONDUCT.md
 [contributing]: CONTRIBUTING.md
