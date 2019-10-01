@@ -1,9 +1,9 @@
 module.exports = function (grunt) {
-  var defaults = {
+  const defaults = {
     html: {
       src: './src/*.html',
       dest: './build',
-      output: './build/*.html'
+      output: './build/**/*.html'
     },
     css: {
       src: './src/_assets/css/style.css',
@@ -37,8 +37,8 @@ module.exports = function (grunt) {
     // Clean build directory
     clean: {
       build: ['build'],
-      css: [defaults.css.output],
-      js: [defaults.js.output]
+      css: [defaults.css.output, `${defaults.css.output}.map`],
+      js: [defaults.js.output, `${defaults.js.output}.map`]
     },
 
     // Copy files
@@ -97,17 +97,27 @@ module.exports = function (grunt) {
       }
     },
 
+    // Lint CSS
+    stylelint: {
+      options: {
+        formatter: 'string',
+        syntax: 'scss',
+        extends: ['stylelint-config-standard']
+      },
+      src: ['src/_assets/css/**/*.css']
+    },
+
     // Process CSS
     postcss: {
       process: {
         options: {
-          map: true, // inline sourcemaps
+          // map: true, // inline sourcemaps
 
           // or
-          // map: {
-          // inline: false, // save all sourcemaps as separate files...
-          // annotation: 'build/css/maps/' // ...to the specified directory
-          // },
+          map: {
+            inline: false, // save all sourcemaps as separate files...
+            annotation: 'build/css/' // ...to the specified directory
+          },
 
           processors: [
             require('postcss-easy-import'), // @import files
@@ -155,9 +165,10 @@ module.exports = function (grunt) {
     // Concatenate and rename .js files
     concat: {
       options: {
-        separator: '\n'
+        separator: ';\n',
+        sourceMap: true
       },
-      dist: {
+      js: {
         src: [defaults.js.src],
         dest: defaults.js.output
       }
@@ -177,6 +188,9 @@ module.exports = function (grunt) {
 
     // Minify .js bundle with uglify
     uglify: {
+      options: {
+        sourceMap: true
+      },
       dist: {
         files: {
           './build/js/bundle.min.js': defaults.js.output
@@ -237,11 +251,12 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-clean')
   grunt.loadNpmTasks('grunt-contrib-copy')
   grunt.loadNpmTasks('grunt-jsbeautifier')
+  grunt.loadNpmTasks('grunt-stylelint')
   grunt.loadNpmTasks('grunt-contrib-sass')
   grunt.loadNpmTasks('grunt-postcss')
   grunt.loadNpmTasks('grunt-standard')
-  grunt.loadNpmTasks('grunt-babel')
   grunt.loadNpmTasks('grunt-contrib-concat')
+  grunt.loadNpmTasks('grunt-babel')
   grunt.loadNpmTasks('grunt-contrib-uglify')
   grunt.loadNpmTasks('grunt-contrib-watch')
   grunt.loadNpmTasks('grunt-contrib-connect')
@@ -249,8 +264,8 @@ module.exports = function (grunt) {
   grunt.registerTask('default', 'build')
   grunt.registerTask('build', ['develop', 'minify:css', 'minify:js'])
   grunt.registerTask('build:html', ['copy:html', 'jsbeautifier:html'])
-  grunt.registerTask('build:css', ['postcss:process', 'jsbeautifier:css'])
-  grunt.registerTask('build:js', ['standard', 'concat', 'babel', 'jsbeautifier:js'])
+  grunt.registerTask('build:css', ['stylelint', 'postcss:process', 'jsbeautifier:css'])
+  grunt.registerTask('build:js', ['standard', 'concat:js', 'babel', 'jsbeautifier:js'])
   grunt.registerTask('minify:css', ['postcss:minify', 'clean:css'])
   grunt.registerTask('minify:js', ['uglify', 'clean:js'])
   grunt.registerTask('develop', ['clean:build', 'build:html', 'copy:assets', 'build:css', 'build:js'])
