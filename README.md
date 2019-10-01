@@ -1,6 +1,8 @@
 # Grunt Starter
 
-Grunt configured with Sass compilation, JavaScript linting, concatenation, and minification, and file watching, serving, and live reloading.
+Fork this repository to start a new project with Grunt, Babel, PostCSS, and the following workflow: linting, Sass and modern CSS transpiling, ES2015+ compiling, concatenation, minification, beautification, source maps, bundling fonts, images, and favicons, serving files, watching for changes, and live reloading.
+
+This is an open source project which uses the [The Hippocratic License][license].
 
 ## Quick Start
 

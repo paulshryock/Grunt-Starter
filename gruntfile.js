@@ -139,17 +139,6 @@ module.exports = function (grunt) {
       }
     },
 
-    // ES5: Lint .js files with jshint
-    jshint: {
-      files: [defaults.js.root, defaults.js.src],
-      option: {
-        globals: {
-          console: true,
-          module: true
-        }
-      }
-    },
-
     // ES6: Lint .js files with standard
     standard: {
       options: {
@@ -250,7 +239,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-jsbeautifier')
   grunt.loadNpmTasks('grunt-contrib-sass')
   grunt.loadNpmTasks('grunt-postcss')
-  grunt.loadNpmTasks('grunt-contrib-jshint')
   grunt.loadNpmTasks('grunt-standard')
   grunt.loadNpmTasks('grunt-babel')
   grunt.loadNpmTasks('grunt-contrib-concat')
